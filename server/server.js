@@ -5,6 +5,7 @@ const {ObjectId} = require('mongodb');
 
 var {mongoose} = require('./db/mongoose');
 var {employee} = require('./models/employee');
+var {User} = require('./models/user');
 var app = express();
 
 app.use(bodyParser.json());
@@ -28,7 +29,7 @@ app.post('/employee', (req, res) => {
     var data = {
       "status" : "success",
       "message" : "Employee sign up successfully",
-      "data" : doc
+      "data" : doemployeec
     }
     res.send(data);
   },(e) => {
@@ -120,6 +121,20 @@ employee.findByIdAndUpdate(id, {$set: body}, {new: true}).then((result) => {
 }).catch((e) => {
     res.status(400).send();
 });
+});
+
+// POST /users
+app.post('/users', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+  var user = new User(body);
+
+  user.save().then(() => {
+    return user.generateAuthToken();
+  }).then((token) => {
+    res.header('x-auth', token).send(user);
+  }).catch((e) => {
+    res.status(400).send(e);
+  })
 });
 
 app.listen(port, () => {
